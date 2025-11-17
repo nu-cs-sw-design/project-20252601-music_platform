@@ -1,7 +1,7 @@
-# Project: NAME
+# Project: Loop Recorder
 
 ## Contributors
-NAME, NAME, NAME
+Namish Kaistha
 
 ## Dependencies
 - LANGUAGE AND VERSION
@@ -10,3 +10,8 @@ NAME, NAME, NAME
 
 ## Build Instructions
 HOW TO BUILD YOUR PROJECT.
+
+
+## Background
+
+The goal here is to build a simple tool that can allow users to record a 4 measure loop on piano in app. 
