@@ -1,2 +1,54 @@
 @startuml
+title UC1: Start the System - MVC Class Diagram (Minimal)
+
+package View {
+    +class Main {
+        +{static} main(args: String[]): void
+    }
+
+    +class MainView {
+        +MainView()
+        +showMainScreen(): void
+        +showAudioError(): void
+    }
+}
+
+package Controller {
+    +class AppController {
+        -audioEngine: AudioEngine
+        -mainView: MainView
+
+        +AppController(mainView: MainView, audioEngine: AudioEngine)
+        +startApplication(): void
+    }
+
+    package engine {
+        +class AudioEngine {
+            +AudioEngine()
+            +initialize(): boolean
+        }
+
+        +class Instrument {
+            +Instrument()
+            +noteOn(pitch: int, vel: int): void
+            +noteOff(pitch: int): void
+            +close(): void
+        }
+    }
+}
+
+' Relationships for UC1
+Main ..> AppController : "creates and calls"
+Main ..> MainView
+AppController ..> MainView
+AppController ..> AudioEngine
+AudioEngine ..> Instrument : "uses"
+
+note right of AppController::startApplication
+UC1: Start the System
+1. audioEngine.initialize()
+2. if success → mainView.showMainScreen()
+3. else → mainView.showAudioError()
+end note
+
 @enduml
