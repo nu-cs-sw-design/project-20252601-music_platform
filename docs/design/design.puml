@@ -1,12 +1,12 @@
 @startuml
-title UC1: Start the System - MVC Class Diagram (Minimal)
+title UC1: Start the System - MVC Class Diagram (Instrument as Strategy)
 
 package View {
-    +class Main {
+    class Main {
         +{static} main(args: String[]): void
     }
 
-    +class MainView {
+    class MainView {
         +MainView()
         +showMainScreen(): void
         +showAudioError(): void
@@ -14,7 +14,7 @@ package View {
 }
 
 package Controller {
-    +class AppController {
+    class AppController {
         -audioEngine: AudioEngine
         -mainView: MainView
 
@@ -23,32 +23,35 @@ package Controller {
     }
 
     package engine {
-        +class AudioEngine {
-            +AudioEngine()
-            +initialize(): boolean
-        }
-
-        +class Instrument {
-            +Instrument()
+        interface Instrument {
             +noteOn(pitch: int, vel: int): void
             +noteOff(pitch: int): void
             +close(): void
         }
+
+        class PianoInstrument implements Instrument {
+            +PianoInstrument()
+            +noteOn(pitch: int, vel: int): void
+            +noteOff(pitch: int): void
+            +close(): void
+        }
+
+        class AudioEngine {
+            -instrument: Instrument
+            +AudioEngine(instrument: Instrument)
+            +initialize(): boolean
+            +noteOn(pitch: int, vel: int): void
+            +noteOff(pitch: int): void
+        }
     }
 }
 
-' Relationships for UC1
 Main ..> AppController : "creates and calls"
 Main ..> MainView
+Main ..> PianoInstrument
+Main ..> AudioEngine
 AppController ..> MainView
 AppController ..> AudioEngine
-AudioEngine ..> Instrument : "uses"
-
-note right of AppController::startApplication
-UC1: Start the System
-1. audioEngine.initialize()
-2. if success → mainView.showMainScreen()
-3. else → mainView.showAudioError()
-end note
+AudioEngine --> Instrument
 
 @enduml
