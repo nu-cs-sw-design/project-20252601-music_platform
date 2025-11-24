@@ -1,5 +1,5 @@
 @startuml
-title UC1: Start the System - MVC Class Diagram (Instrument as Strategy)
+title UC1: Start the System - MVC Class Diagram (AudioEngine owns default Piano)
 
 package View {
     class Main {
@@ -38,7 +38,7 @@ package Controller {
 
         class AudioEngine {
             -instrument: Instrument
-            +AudioEngine(instrument: Instrument)
+            +AudioEngine()
             +initialize(): boolean
             +noteOn(pitch: int, vel: int): void
             +noteOff(pitch: int): void
@@ -48,10 +48,9 @@ package Controller {
 
 Main ..> AppController : "creates and calls"
 Main ..> MainView
-Main ..> PianoInstrument
 Main ..> AudioEngine
 AppController ..> MainView
 AppController ..> AudioEngine
-AudioEngine --> Instrument
+AudioEngine --> Instrument : "default piano"
 
 @enduml
