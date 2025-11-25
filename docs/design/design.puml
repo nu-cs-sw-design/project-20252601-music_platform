@@ -1,15 +1,22 @@
 @startuml
-title UC1: Start the System - MVC Class Diagram (AudioEngine owns default Piano)
+title UC1 + Piano Roll (association-only notation)
 
 package View {
+
     class Main {
         +{static} main(args: String[]): void
     }
 
     class MainView {
+        -pianoRollView: PianoRollView
         +MainView()
         +showMainScreen(): void
         +showAudioError(): void
+    }
+
+    class PianoRollView {
+        +PianoRollView()
+        +setMeasures(measures: int): void
     }
 }
 
@@ -49,8 +56,12 @@ package Controller {
 Main ..> AppController : "creates and calls"
 Main ..> MainView
 Main ..> AudioEngine
-AppController ..> MainView
-AppController ..> AudioEngine
+
+MainView --> PianoRollView : "contains 4-measure grid"
+
+AppController --> MainView
+AppController --> AudioEngine
+
 AudioEngine --> Instrument : "default piano"
 
 @enduml
