@@ -1,5 +1,5 @@
 @startuml
-title UC1 + Piano Roll + Loop Model (no rendering yet)
+title UC1 + Piano Roll + Loop Model (Loop passed into View)
 
 package View {
     class Main {
@@ -8,15 +8,45 @@ package View {
 
     class MainView {
         -pianoRollView: PianoRollView
+        -currentLoop: Loop
 
         +MainView()
-        +showMainScreen(): void
+        +showMainScreen(loop: Loop): void
         +showAudioError(): void
     }
 
     class PianoRollView {
+        -loop: Loop
+
         +PianoRollView()
         +setMeasures(measures: int): void
+        +setLoop(loop: Loop): void
+    }
+}
+
+package Model {
+    class Loop {
+        -notes: List<LoopNote>
+        -measures: int
+
+        +Loop(measures: int)
+        +addNote(note: LoopNote): void
+        +removeNote(note: LoopNote): void
+        +getNotes(): List<LoopNote>
+        +getMeasures(): int
+    }
+
+    class LoopNote {
+        -pitch: int
+        -startBeat: double
+        -durationBeats: double
+        -velocity: int
+
+        +LoopNote(pitch: int, startBeat: double, durationBeats: double, velocity: int)
+        +getPitch(): int
+        +getStartBeat(): double
+        +getDurationBeats(): double
+        +getVelocity(): int
     }
 }
 
@@ -26,7 +56,7 @@ package Controller {
         -mainView: MainView
         -currentLoop: Loop
 
-        +AppController(mainView: MainView, audioEngine: AudioEngine)
+        +AppController(mainView: MainView, audioEngine: AudioEngine, loop: Loop)
         +startApplication(): void
     }
 
@@ -54,51 +84,24 @@ package Controller {
     }
 }
 
-package Model {
-    class Loop {
-        -notes: List<LoopNote>
-        -measures: int
-
-        +Loop(measures: int)
-        +addNote(note: LoopNote): void
-        +removeNote(note: LoopNote): void
-        +getNotes(): List<LoopNote>
-        +getMeasures(): int
-    }
-
-    class LoopNote {
-        -pitch: int
-        -startBeat: double
-        -durationBeats: double
-        -velocity: int
-
-        +getPitch(): int
-        +getStartBeat(): double
-        +getDurationBeats(): double
-        +getVelocity(): int
-    }
-
-}
-
 ' --- Relationships ---
 
-' Startup wiring
 Main ..> AppController : "creates and calls"
 Main ..> MainView
 Main ..> AudioEngine
+Main ..> Loop : "creates 4-measure loop"
 
-' View wiring
 MainView --> PianoRollView : "contains"
+MainView --> Loop : "displays"
+PianoRollView --> Loop : "renders"
 
-' Controller wiring
 AppController --> MainView
 AppController --> AudioEngine
 AppController --> Loop : "currentLoop"
 
-' Engine wiring
+Controller.engine.PianoInstrument --|> Controller.engine.Instrument
 Controller.engine.AudioEngine --> Controller.engine.Instrument : "default piano"
 
-' Model wiring
 Loop --> LoopNote : "contains notes"
 
 @enduml

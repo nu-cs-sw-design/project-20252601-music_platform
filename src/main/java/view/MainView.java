@@ -1,5 +1,7 @@
 package view;
 
+import model.Loop;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -7,6 +9,7 @@ public class MainView extends JFrame {
 
     private JLabel statusLabel;
     private PianoRollView pianoRollView;
+    private Loop currentLoop;
 
     public MainView() {
         super("LoopSketch");
@@ -17,7 +20,6 @@ public class MainView extends JFrame {
 
         pianoRollView = new PianoRollView();
 
-        // Layout: title/status at top, piano roll in center
         setLayout(new BorderLayout());
 
         JPanel header = new JPanel(new BorderLayout());
@@ -37,18 +39,18 @@ public class MainView extends JFrame {
 
     /**
      * Called when audio init succeeds.
-     * Shows the main application screen.
+     * Now also receives the Loop that should be displayed/edited.
      */
-    public void showMainScreen() {
+    public void showMainScreen(Loop loop) {
+        this.currentLoop = loop;
+        pianoRollView.setLoop(loop);
+
         statusLabel.setText("System ready. Main screen displayed.");
         if (!isVisible()) {
             setVisible(true);
         }
     }
 
-    /**
-     * Called when audio init fails.
-     */
     public void showAudioError() {
         if (!isVisible()) {
             setVisible(true);

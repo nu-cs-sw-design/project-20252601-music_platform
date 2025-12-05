@@ -1,23 +1,19 @@
 package view;
 
+import model.Loop;
+
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Simple piano roll view that renders an empty grid.
- * Time runs left→right, pitch runs bottom→top.
- *
- * For now, it always shows a 4-measure grid (by default),
- * with 4 beats per measure and 4 steps per beat.
- */
 public class PianoRollView extends JPanel {
 
     private int measures = 4;
     private int beatsPerMeasure = 4;
-    private int stepsPerBeat = 4;  // subdivision within a beat
-    private int numPitches = 12;   // number of pitch rows to display
+    private int stepsPerBeat = 4;
+    private int numPitches = 12;
 
-    // Padding around the grid for nicer visuals
+    private Loop loop;  // current loop to eventually render
+
     private static final int PADDING_LEFT = 40;
     private static final int PADDING_RIGHT = 20;
     private static final int PADDING_TOP = 20;
@@ -25,16 +21,19 @@ public class PianoRollView extends JPanel {
 
     public PianoRollView() {
         setBackground(Color.DARK_GRAY);
-        // This just gives layout managers a hint; frame can resize it.
         setPreferredSize(new Dimension(800, 300));
     }
 
-    /**
-     * Allows changing the number of measures (default is 4).
-     */
     public void setMeasures(int measures) {
         if (measures <= 0) return;
         this.measures = measures;
+        repaint();
+    }
+
+    public void setLoop(Loop loop) {
+        this.loop = loop;
+        // For now we still just draw the empty grid;
+        // later we'll use loop.getNotes() inside paintComponent.
         repaint();
     }
 
@@ -42,6 +41,7 @@ public class PianoRollView extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         drawGrid((Graphics2D) g);
+        // later: drawNotes(g2, loop);
     }
 
     private void drawGrid(Graphics2D g2) {
@@ -51,24 +51,19 @@ public class PianoRollView extends JPanel {
         int width = getWidth();
         int height = getHeight();
 
-        // Compute drawing area
         int gridX = PADDING_LEFT;
         int gridY = PADDING_TOP;
         int gridWidth = width - PADDING_LEFT - PADDING_RIGHT;
         int gridHeight = height - PADDING_TOP - PADDING_BOTTOM;
 
-        // Fill background for grid area
         g2.setColor(new Color(40, 40, 40));
         g2.fillRect(gridX, gridY, gridWidth, gridHeight);
 
-        // Total vertical divisions (time)
         int totalSteps = measures * beatsPerMeasure * stepsPerBeat;
         double stepWidth = (double) gridWidth / totalSteps;
-
-        // Horizontal divisions (pitch rows)
         double rowHeight = (double) gridHeight / numPitches;
 
-        // Draw vertical grid lines (time)
+        // vertical time lines
         for (int step = 0; step <= totalSteps; step++) {
             int x = gridX + (int) Math.round(step * stepWidth);
 
@@ -76,15 +71,12 @@ public class PianoRollView extends JPanel {
             boolean isBeatLine = (step % stepsPerBeat == 0);
 
             if (isMeasureLine) {
-                // Measure boundary - thicker and brighter
                 g2.setColor(new Color(220, 220, 220));
                 g2.setStroke(new BasicStroke(2f));
             } else if (isBeatLine) {
-                // Beat boundary - medium
                 g2.setColor(new Color(120, 120, 120));
                 g2.setStroke(new BasicStroke(1.5f));
             } else {
-                // Subdivision line
                 g2.setColor(new Color(80, 80, 80));
                 g2.setStroke(new BasicStroke(1f));
             }
@@ -92,7 +84,7 @@ public class PianoRollView extends JPanel {
             g2.drawLine(x, gridY, x, gridY + gridHeight);
         }
 
-        // Draw horizontal grid lines (pitch)
+        // horizontal pitch lines
         for (int row = 0; row <= numPitches; row++) {
             int y = gridY + (int) Math.round(row * rowHeight);
             g2.setColor(new Color(90, 90, 90));
@@ -100,12 +92,12 @@ public class PianoRollView extends JPanel {
             g2.drawLine(gridX, y, gridX + gridWidth, y);
         }
 
-        // Draw border around the whole grid
+        // border
         g2.setColor(new Color(230, 230, 230));
         g2.setStroke(new BasicStroke(2f));
         g2.drawRect(gridX, gridY, gridWidth, gridHeight);
 
-        // Optional labels: measures along the bottom
+        // measure labels
         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 12f));
         g2.setColor(new Color(200, 200, 200));
 

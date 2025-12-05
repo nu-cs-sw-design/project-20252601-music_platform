@@ -2,18 +2,21 @@ package view;
 
 import controller.AppController;
 import controller.engine.AudioEngine;
+import model.Loop;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class Main {
 
     public static void main(String[] args) {
-        // Make sure UI is created on the Event Dispatch Thread (Swing best practice)
         SwingUtilities.invokeLater(() -> {
             MainView mainView = new MainView();
             AudioEngine audioEngine = new AudioEngine();
-            AppController controller = new AppController(mainView, audioEngine);
-            controller.startApplication();   // UC1: Start the System
+
+            Loop loop = new Loop(4);  // 4-measure loop, initially empty
+
+            AppController controller = new AppController(mainView, audioEngine, loop);
+            controller.startApplication();
         });
     }
 }

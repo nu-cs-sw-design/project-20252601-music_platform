@@ -1,8 +1,8 @@
 package controller;
 
-import view.MainView;
 import controller.engine.AudioEngine;
 import model.Loop;
+import view.MainView;
 
 public class AppController {
 
@@ -10,23 +10,21 @@ public class AppController {
     private final MainView mainView;
     private final Loop currentLoop;
 
-    public AppController(MainView mainView, AudioEngine audioEngine) {
+    public AppController(MainView mainView, AudioEngine audioEngine, Loop loop) {
         this.mainView = mainView;
         this.audioEngine = audioEngine;
-        this.currentLoop = new Loop(4);
+        this.currentLoop = loop;
     }
 
     /**
      * UC1: Start the System
-     * 1. audioEngine.initialize()
-     * 2. if success → mainView.showMainScreen()
-     * 3. else → mainView.showAudioError()
      */
     public void startApplication() {
         boolean success = audioEngine.initialize();
 
         if (success) {
-            mainView.showMainScreen();
+            // Pass the loop into the view
+            mainView.showMainScreen(currentLoop);
         } else {
             mainView.showAudioError();
         }
