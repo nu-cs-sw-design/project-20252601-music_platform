@@ -1,5 +1,5 @@
 @startuml
-title UC1 + Piano Roll + Loop Model (Loop passed into View)
+title UC2 Editing: Click to Add / Remove Notes
 
 package View {
     class Main {
@@ -13,14 +13,29 @@ package View {
         +MainView()
         +showMainScreen(loop: Loop): void
         +showAudioError(): void
+        +setPianoRollListener(listener: PianoRollListener): void
+        +refreshPianoRoll(): void
     }
 
     class PianoRollView {
         -loop: Loop
+        -listener: PianoRollListener
 
         +PianoRollView()
         +setMeasures(measures: int): void
         +setLoop(loop: Loop): void
+        +setPianoRollListener(listener: PianoRollListener): void
+        ' Internally handles mouse clicks, then calls listener
+    }
+
+    interface PianoRollListener {
+        +onEmptyCellClicked(beat: double, pitchIndex: int): void
+        +onNoteClicked(note: LoopNote): void
+    }
+
+    interface TransportListener {
+       +onPlayRequested(): void
+        +onPauseRequested(): void
     }
 }
 
@@ -58,7 +73,12 @@ package Controller {
 
         +AppController(mainView: MainView, audioEngine: AudioEngine, loop: Loop)
         +startApplication(): void
+
+        +onEmptyCellClicked(beat: double, pitchIndex: int): void
+        +onNoteClicked(note: LoopNote): void
     }
+
+    AppController --|> PianoRollListener
 
     package engine {
         interface Instrument {
@@ -81,6 +101,12 @@ package Controller {
             +noteOn(pitch: int, vel: int): void
             +noteOff(pitch: int): void
         }
+        class LoopSequencer {
+                    -audioEngine: AudioEngine
+                    +LoopSequencer(audioEngine: AudioEngine)
+                    +play(loop: Loop): void
+                    +pause(): void
+                }
     }
 }
 
@@ -93,7 +119,11 @@ Main ..> Loop : "creates 4-measure loop"
 
 MainView --> PianoRollView : "contains"
 MainView --> Loop : "displays"
+MainView --> PianoRollListener : "wires listener"
+
 PianoRollView --> Loop : "renders"
+PianoRollView ..> LoopNote : "hit-detects notes"
+PianoRollView --> PianoRollListener : "notifies on click"
 
 AppController --> MainView
 AppController --> AudioEngine
@@ -103,5 +133,7 @@ Controller.engine.PianoInstrument --|> Controller.engine.Instrument
 Controller.engine.AudioEngine --> Controller.engine.Instrument : "default piano"
 
 Loop --> LoopNote : "contains notes"
-
+Controller.engine.LoopSequencer --> Controller.engine.AudioEngine
+Controller.engine.LoopSequencer --> Loop
+AppController --|> TransportListener
 @enduml

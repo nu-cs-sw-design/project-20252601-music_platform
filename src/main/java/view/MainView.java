@@ -37,10 +37,6 @@ public class MainView extends JFrame {
         add(pianoRollView, BorderLayout.CENTER);
     }
 
-    /**
-     * Called when audio init succeeds.
-     * Now also receives the Loop that should be displayed/edited.
-     */
     public void showMainScreen(Loop loop) {
         this.currentLoop = loop;
         pianoRollView.setLoop(loop);
@@ -65,5 +61,13 @@ public class MainView extends JFrame {
                 "Audio Error",
                 JOptionPane.ERROR_MESSAGE
         );
+    }
+
+    public void setPianoRollListener(PianoRollListener listener) {
+        pianoRollView.setPianoRollListener(listener);
+    }
+
+    public void refreshPianoRoll() {
+        pianoRollView.repaint();
     }
 }
