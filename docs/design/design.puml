@@ -1,14 +1,14 @@
 @startuml
-title UC1 + Piano Roll (association-only notation)
+title UC1 + Piano Roll + Loop Model (no rendering yet)
 
 package View {
-
     class Main {
         +{static} main(args: String[]): void
     }
 
     class MainView {
         -pianoRollView: PianoRollView
+
         +MainView()
         +showMainScreen(): void
         +showAudioError(): void
@@ -24,6 +24,7 @@ package Controller {
     class AppController {
         -audioEngine: AudioEngine
         -mainView: MainView
+        -currentLoop: Loop
 
         +AppController(mainView: MainView, audioEngine: AudioEngine)
         +startApplication(): void
@@ -53,15 +54,51 @@ package Controller {
     }
 }
 
+package Model {
+    class Loop {
+        -notes: List<LoopNote>
+        -measures: int
+
+        +Loop(measures: int)
+        +addNote(note: LoopNote): void
+        +removeNote(note: LoopNote): void
+        +getNotes(): List<LoopNote>
+        +getMeasures(): int
+    }
+
+    class LoopNote {
+        -pitch: int
+        -startBeat: double
+        -durationBeats: double
+        -velocity: int
+
+        +getPitch(): int
+        +getStartBeat(): double
+        +getDurationBeats(): double
+        +getVelocity(): int
+    }
+
+}
+
+' --- Relationships ---
+
+' Startup wiring
 Main ..> AppController : "creates and calls"
 Main ..> MainView
 Main ..> AudioEngine
 
-MainView --> PianoRollView : "contains 4-measure grid"
+' View wiring
+MainView --> PianoRollView : "contains"
 
+' Controller wiring
 AppController --> MainView
 AppController --> AudioEngine
+AppController --> Loop : "currentLoop"
 
-AudioEngine --> Instrument : "default piano"
+' Engine wiring
+Controller.engine.AudioEngine --> Controller.engine.Instrument : "default piano"
+
+' Model wiring
+Loop --> LoopNote : "contains notes"
 
 @enduml

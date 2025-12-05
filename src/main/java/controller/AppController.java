@@ -2,15 +2,18 @@ package controller;
 
 import view.MainView;
 import controller.engine.AudioEngine;
+import model.Loop;
 
 public class AppController {
 
     private final AudioEngine audioEngine;
     private final MainView mainView;
+    private final Loop currentLoop;
 
     public AppController(MainView mainView, AudioEngine audioEngine) {
         this.mainView = mainView;
         this.audioEngine = audioEngine;
+        this.currentLoop = new Loop(4);
     }
 
     /**
