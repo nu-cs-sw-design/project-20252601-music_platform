@@ -21,7 +21,7 @@ public class AppController implements PianoRollListener, TransportListener {
         this.currentLoop = loop;
 
         // For now, fix BPM = 120, beatsPerMeasure = 4
-        this.loopSequencer = new LoopSequencer(audioEngine, 120.0, 4);
+        this.loopSequencer = new LoopSequencer(audioEngine,  4);
 
         // Wire controller as listeners
         this.mainView.setPianoRollListener(this);

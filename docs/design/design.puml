@@ -43,12 +43,16 @@ package Model {
     class Loop {
         -notes: List<LoopNote>
         -measures: int
+        -tempoBPM: double
 
         +Loop(measures: int)
         +addNote(note: LoopNote): void
         +removeNote(note: LoopNote): void
         +getNotes(): List<LoopNote>
         +getMeasures(): int
+        +getTempoBPM(): double
+        +setTempoBpm(double tempoBpm)
+
     }
 
     class LoopNote {

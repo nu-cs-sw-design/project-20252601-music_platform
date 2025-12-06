@@ -17,15 +17,13 @@ import java.util.Set;
 public class LoopSequencer {
 
     private final AudioEngine audioEngine;
-    private final double bpm;
     private final int beatsPerMeasure;
 
     private volatile boolean playing = false;
     private Thread playbackThread;
 
-    public LoopSequencer(AudioEngine audioEngine, double bpm, int beatsPerMeasure) {
+    public LoopSequencer(AudioEngine audioEngine, int beatsPerMeasure) {
         this.audioEngine = audioEngine;
-        this.bpm = bpm;
         this.beatsPerMeasure = beatsPerMeasure;
     }
 
@@ -66,6 +64,7 @@ public class LoopSequencer {
     }
 
     private void runPlaybackLoop(Loop loop) {
+        double bpm = loop.getTempoBPM();
         final double beatDurationMs = 60000.0 / bpm; // 1 beat = this many ms
         final int totalBeatsInLoop = loop.getMeasures() * beatsPerMeasure;
 

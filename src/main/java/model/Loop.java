@@ -12,12 +12,31 @@ public class Loop {
 
     private final List<LoopNote> notes = new ArrayList<>();
     private final int measures;
+    private double tempoBPM;
 
     public Loop(int measures) {
         if (measures <= 0) {
             throw new IllegalArgumentException("measures must be > 0");
         }
         this.measures = measures;
+    }
+
+    public double getTempoBPM() {
+        return tempoBPM;
+    }
+
+    public void setTempoBPM(int tempoBPM) {
+        int lowerClamp = 40;
+        int higherClamp = 240;
+        if (tempoBPM < lowerClamp) {
+            this.tempoBPM = lowerClamp;
+        }
+        else if (tempoBPM > higherClamp) {
+            this.tempoBPM = higherClamp;
+        }
+        else {
+            this.tempoBPM = tempoBPM;
+        }
     }
 
     public int getMeasures() {
