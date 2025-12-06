@@ -7,8 +7,9 @@ import model.LoopNote;
 import view.MainView;
 import view.PianoRollListener;
 import view.TransportListener;
+import view.TempoListener;
 
-public class AppController implements PianoRollListener, TransportListener {
+public class AppController implements PianoRollListener, TransportListener, TempoListener {
 
     private final AudioEngine audioEngine;
     private final LoopSequencer loopSequencer;
@@ -20,12 +21,13 @@ public class AppController implements PianoRollListener, TransportListener {
         this.audioEngine = audioEngine;
         this.currentLoop = loop;
 
-        // For now, fix BPM = 120, beatsPerMeasure = 4
-        this.loopSequencer = new LoopSequencer(audioEngine,  4);
+        // 4 beats per measure for now
+        this.loopSequencer = new LoopSequencer(audioEngine, 4);
 
-        // Wire controller as listeners
+        // Wire listeners
         this.mainView.setPianoRollListener(this);
         this.mainView.setTransportListener(this);
+        this.mainView.setTempoListener(this);
     }
 
     public void startApplication() {
@@ -33,7 +35,7 @@ public class AppController implements PianoRollListener, TransportListener {
 
         if (success) {
             mainView.showMainScreen(currentLoop);
-            mainView.setStatusMessage("System ready. Click on the grid to add notes, then Play.");
+            mainView.setStatusMessage("System ready. Click to add notes, set tempo, then Play.");
         } else {
             mainView.showAudioError();
         }
@@ -43,8 +45,8 @@ public class AppController implements PianoRollListener, TransportListener {
 
     @Override
     public void onEmptyCellClicked(double beat, int pitchIndex) {
-        int pitch = pitchIndex;            // later: map to MIDI pitch range
-        double durationBeats = 1.0;        // default 1 beat
+        int pitch = pitchIndex;            // simple mapping for now
+        double durationBeats = 1.0;        // 1 beat
         int velocity = 100;
 
         LoopNote note = new LoopNote(pitch, beat, durationBeats, velocity);
@@ -63,13 +65,42 @@ public class AppController implements PianoRollListener, TransportListener {
 
     @Override
     public void onPlayRequested() {
-        mainView.setStatusMessage("Playing loop...");
+        mainView.setStatusMessage("Playing loop at " +
+                String.format("%.1f", currentLoop.getTempoBPM()) + " BPM...");
         loopSequencer.play(currentLoop);
     }
 
     @Override
     public void onPauseRequested() {
-        mainView.setStatusMessage("Playback paused.");
         loopSequencer.pause();
+        mainView.setStatusMessage("Playback paused.");
+    }
+
+    // --- TempoListener (UC5: change tempo) ---
+
+    @Override
+    public void onTempoChangeRequested(String bpmText) {
+        // Enforce: Only possible if loop is stopped
+        if (loopSequencer.isPlaying()) {
+            mainView.setStatusMessage("Stop playback before changing tempo.");
+            return;
+        }
+
+        double bpm;
+        try {
+            bpm = Double.parseDouble(bpmText.trim());
+        } catch (NumberFormatException e) {
+            mainView.setStatusMessage("Invalid tempo. Please enter a number.");
+            return;
+        }
+
+        // Let the model clamp to allowed range (40–240)
+        currentLoop.setTempoBPM(bpm);
+        double effectiveBpm = currentLoop.getTempoBPM();
+
+        // Reflect clamped value back into the UI
+        mainView.setTempoDisplay(effectiveBpm);
+        mainView.setStatusMessage("Tempo set to " +
+                String.format("%.1f", effectiveBpm) + " BPM.");
     }
 }
