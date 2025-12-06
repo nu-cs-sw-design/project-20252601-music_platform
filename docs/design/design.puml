@@ -131,6 +131,7 @@ package Controller {
             +LoopSequencer(audioEngine: AudioEngine, beatsPerMeasure: int)
             +play(loop: Loop): void
             +pause(): void
+            +isPlaying(): boolean
         }
     }
 }
