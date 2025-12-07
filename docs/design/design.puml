@@ -1,5 +1,5 @@
 @startuml
-title UC2 + UC5: Edit Notes, Play/Pause, Change Tempo
+title UC2 + UC5 + UC6: Edit Notes, Play/Pause, Change Tempo, Save Loop
 
 package View {
     class Main {
@@ -9,8 +9,6 @@ package View {
     class MainView {
         -pianoRollView: PianoRollView
         -currentLoop: Loop
-        ' UI fields for tempo input (conceptual)
-        '-tempoTextField: JTextField
 
         +MainView()
         +showMainScreen(loop: Loop): void
@@ -19,6 +17,7 @@ package View {
         +setPianoRollListener(listener: PianoRollListener): void
         +setTransportListener(listener: TransportListener): void
         +setTempoListener(listener: TempoListener): void
+        +setSaveLoopListener(listener: SaveLoopListener): void
 
         +refreshPianoRoll(): void
         +setStatusMessage(message: String): void
@@ -33,8 +32,6 @@ package View {
         +setMeasures(measures: int): void
         +setLoop(loop: Loop): void
         +setPianoRollListener(listener: PianoRollListener): void
-        ' Internally handles mouse clicks, hit-detects notes,
-        ' and calls listener.
     }
 
     interface PianoRollListener {
@@ -49,6 +46,10 @@ package View {
 
     interface TempoListener {
         +onTempoChangeRequested(bpmText: String): void
+    }
+
+    interface SaveLoopListener {
+        +onSaveLoopRequested(): void
     }
 }
 
@@ -85,6 +86,7 @@ package Controller {
     class AppController {
         -audioEngine: AudioEngine
         -loopSequencer: LoopSequencer
+        -loopStorage: LoopJsonStorage
         -mainView: MainView
         -currentLoop: Loop
 
@@ -96,11 +98,13 @@ package Controller {
         +onPlayRequested(): void
         +onPauseRequested(): void
         +onTempoChangeRequested(bpmText: String): void
+        +onSaveLoopRequested(): void
     }
 
     AppController --|> PianoRollListener
     AppController --|> TransportListener
     AppController --|> TempoListener
+    AppController --|> SaveLoopListener
 
     package engine {
         interface Instrument {
@@ -136,6 +140,15 @@ package Controller {
     }
 }
 
+package persistence {
+    class LoopJsonStorage {
+        -baseDirectory: Path
+
+        +LoopJsonStorage(baseDirectory: Path)
+        +saveLoop(loop: Loop, fileName: String): void
+    }
+}
+
 ' --- Relationships ---
 
 Main ..> AppController : "creates and calls"
@@ -147,7 +160,8 @@ MainView --> PianoRollView : "contains"
 MainView --> Loop : "displays"
 MainView --> PianoRollListener : "wires piano roll"
 MainView --> TransportListener : "wires transport"
-MainView --> TempoListener : "wires tempo control"
+MainView --> TempoListener : "wires tempo"
+MainView --> SaveLoopListener : "wires save loop"
 
 PianoRollView --> Loop : "renders"
 PianoRollView ..> LoopNote : "hit-detects notes"
@@ -156,13 +170,18 @@ PianoRollView --> PianoRollListener : "notifies on click"
 AppController --> MainView
 AppController --> AudioEngine
 AppController --> LoopSequencer
+AppController --> LoopJsonStorage
 AppController --> Loop : "currentLoop"
 
 Controller.engine.PianoInstrument --|> Controller.engine.Instrument
 Controller.engine.AudioEngine --> Controller.engine.Instrument : "default piano"
 
 Loop --> LoopNote : "contains notes"
+
 Controller.engine.LoopSequencer --> Controller.engine.AudioEngine
 Controller.engine.LoopSequencer --> Loop
+
+persistence.LoopJsonStorage --> Loop
+persistence.LoopJsonStorage ..> LoopNote
 
 @enduml

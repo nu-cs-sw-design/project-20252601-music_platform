@@ -12,8 +12,9 @@ public class MainView extends JFrame {
     private Loop currentLoop;
 
     private TransportListener transportListener;
-    private PianoRollListener pianoRollListener; // not strictly needed, but nice to keep
+    private PianoRollListener pianoRollListener; // optional, but okay to keep
     private TempoListener tempoListener;
+    private SaveLoopListener saveLoopListener;
 
     private JTextField tempoField;
 
@@ -25,7 +26,6 @@ public class MainView extends JFrame {
         setLocationRelativeTo(null);
 
         pianoRollView = new PianoRollView();
-
         setLayout(new BorderLayout());
 
         // --- Header (title + status) ---
@@ -45,13 +45,15 @@ public class MainView extends JFrame {
         // --- Center (piano roll) ---
         add(pianoRollView, BorderLayout.CENTER);
 
-        // --- Bottom panel: transport + tempo ---
+        // --- Bottom panel: transport + save + tempo ---
         JPanel bottomPanel = new JPanel(new BorderLayout());
 
-        // Transport controls (Play / Pause)
+        // Transport + Save (left side)
         JPanel transportPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
         JButton playButton = new JButton("Play");
         JButton pauseButton = new JButton("Pause");
+        JButton saveButton = new JButton("Save Loop");
 
         playButton.addActionListener(e -> {
             if (transportListener != null) {
@@ -65,12 +67,19 @@ public class MainView extends JFrame {
             }
         });
 
+        saveButton.addActionListener(e -> {
+            if (saveLoopListener != null) {
+                saveLoopListener.onSaveLoopRequested();
+            }
+        });
+
         transportPanel.add(playButton);
         transportPanel.add(pauseButton);
+        transportPanel.add(saveButton);
 
         bottomPanel.add(transportPanel, BorderLayout.WEST);
 
-        // Tempo controls
+        // Tempo controls (right side)
         JPanel tempoPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JLabel tempoLabel = new JLabel("Tempo (BPM):");
         tempoField = new JTextField(5);
@@ -99,7 +108,7 @@ public class MainView extends JFrame {
         // Initialize tempo display from model
         setTempoDisplay(loop.getTempoBPM());
 
-        statusLabel.setText("System ready. Click to add notes, then Play.");
+        statusLabel.setText("System ready. Add notes, set tempo, then Play.");
         if (!isVisible()) {
             setVisible(true);
         }
@@ -134,6 +143,10 @@ public class MainView extends JFrame {
         this.tempoListener = tempoListener;
     }
 
+    public void setSaveLoopListener(SaveLoopListener saveLoopListener) {
+        this.saveLoopListener = saveLoopListener;
+    }
+
     public void refreshPianoRoll() {
         pianoRollView.repaint();
     }
@@ -144,7 +157,6 @@ public class MainView extends JFrame {
 
     /**
      * Updates the tempo text field to show the current BPM.
-     * Called by the controller after successful/clamped update.
      */
     public void setTempoDisplay(double bpm) {
         if (tempoField != null) {
