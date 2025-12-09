@@ -1,5 +1,5 @@
 @startuml
-title UC2 + UC5 + UC6: Edit Notes, Play/Pause, Change Tempo, Save Loop
+title LoopSketch Design
 
 package View {
     class Main {
@@ -29,7 +29,6 @@ package View {
         -listener: PianoRollListener
 
         +PianoRollView()
-        +setMeasures(measures: int): void
         +setLoop(loop: Loop): void
         +setPianoRollListener(listener: PianoRollListener): void
     }
@@ -79,6 +78,15 @@ package Model {
         +getStartBeat(): double
         +getDurationBeats(): double
         +getVelocity(): int
+    }
+
+    package persistence {
+        class LoopJsonStorage {
+            -baseDirectory: Path
+
+            +LoopJsonStorage(baseDirectory: Path)
+            +saveLoop(loop: Loop, fileName: String): void
+        }
     }
 }
 
@@ -136,16 +144,8 @@ package Controller {
             +play(loop: Loop): void
             +pause(): void
             +isPlaying(): boolean
+            +runPlaybackLoop(Loop)
         }
-    }
-}
-
-package persistence {
-    class LoopJsonStorage {
-        -baseDirectory: Path
-
-        +LoopJsonStorage(baseDirectory: Path)
-        +saveLoop(loop: Loop, fileName: String): void
     }
 }
 
@@ -173,7 +173,6 @@ AppController --> LoopSequencer
 AppController --> LoopJsonStorage
 AppController --> Loop : "currentLoop"
 
-Controller.engine.PianoInstrument --|> Controller.engine.Instrument
 Controller.engine.AudioEngine --> Controller.engine.Instrument : "default piano"
 
 Loop --> LoopNote : "contains notes"
@@ -181,7 +180,7 @@ Loop --> LoopNote : "contains notes"
 Controller.engine.LoopSequencer --> Controller.engine.AudioEngine
 Controller.engine.LoopSequencer --> Loop
 
-persistence.LoopJsonStorage --> Loop
-persistence.LoopJsonStorage ..> LoopNote
+LoopJsonStorage --> Loop
+LoopJsonStorage ..> LoopNote
 
 @enduml

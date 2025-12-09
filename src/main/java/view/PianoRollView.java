@@ -36,12 +36,6 @@ public class PianoRollView extends JPanel {
         });
     }
 
-    public void setMeasures(int measures) {
-        if (measures <= 0) return;
-        this.measures = measures;
-        repaint();
-    }
-
     public void setLoop(Loop loop) {
         this.loop = loop;
         repaint();

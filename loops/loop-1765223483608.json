@@ -1,0 +1,78 @@
+{
+  "measures": 4,
+  "tempoBPM": 80.0,
+  "notes": [
+    {
+      "pitch": 11,
+      "startBeat": 4.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 4,
+      "startBeat": 4.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 7,
+      "startBeat": 4.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 11,
+      "startBeat": 8.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 7,
+      "startBeat": 8.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 11,
+      "startBeat": 12.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 7,
+      "startBeat": 12.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 11,
+      "startBeat": 0.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 7,
+      "startBeat": 0.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 4,
+      "startBeat": 0.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 2,
+      "startBeat": 8.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    },
+    {
+      "pitch": 2,
+      "startBeat": 12.0,
+      "durationBeats": 1.0,
+      "velocity": 100
+    }
+  ]
+}
