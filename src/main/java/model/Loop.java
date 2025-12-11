@@ -5,61 +5,34 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a loop made up of a fixed number of measures.
- * Holds notes and tempo; no playback logic.
+ * Represents a loop: a fixed number of measures, a tempo, and a set of notes.
  */
 public class Loop {
 
     private final List<LoopNote> notes = new ArrayList<>();
-    private final int measures;
-
-    // --- Tempo support ---
-    private static final double MIN_BPM = 40.0;
-    private static final double MAX_BPM = 240.0;
-
-    // Default tempo for new loops
-    private double tempoBPM = 120.0;
-
-    public Loop(int measures) {
-        if (measures <= 0) {
-            throw new IllegalArgumentException("measures must be > 0");
-        }
-        this.measures = measures;
-        // tempoBPM already defaults to 120.0
-    }
-
-    // --- Tempo API ---
-
-    public double getTempoBPM() {
-        return tempoBPM;
-    }
+    private Measures measures;
+    private Tempo tempo;
 
     /**
-     * Sets the tempo in BPM, clamped to [MIN_BPM, MAX_BPM].
-     * Accepts double so we can support non-integer BPM later.
+     * Legacy convenience constructor: still allow passing an int.
+     * Internally wraps it in Measures.
      */
-    public void setTempoBPM(double tempoBPM) {
-        if (Double.isNaN(tempoBPM) || Double.isInfinite(tempoBPM)) {
-            return; // ignore nonsense
-        }
-
-        if (tempoBPM < MIN_BPM) {
-            this.tempoBPM = MIN_BPM;
-        } else if (tempoBPM > MAX_BPM) {
-            this.tempoBPM = MAX_BPM;
-        } else {
-            this.tempoBPM = tempoBPM;
-        }
+    public Loop(int measures) {
+        this(new Measures(measures));
     }
 
-    // --- Measures / notes ---
-
-    public int getMeasures() {
-        return measures;
+    public Loop(Measures measures) {
+        if (measures == null) {
+            throw new IllegalArgumentException("measures cannot be null");
+        }
+        this.measures = measures;
+        this.tempo = new Tempo(120.0); // default tempo
     }
 
     public void addNote(LoopNote note) {
-        if (note == null) return;
+        if (note == null) {
+            throw new IllegalArgumentException("note cannot be null");
+        }
         notes.add(note);
     }
 
@@ -67,11 +40,66 @@ public class Loop {
         notes.remove(note);
     }
 
-    /**
-     * Returns an unmodifiable view of the notes.
-     * Prevents callers from mutating the internal list directly.
-     */
     public List<LoopNote> getNotes() {
         return Collections.unmodifiableList(notes);
+    }
+
+    // --- Measures ---
+
+    public Measures getMeasures() {
+        return measures;
+    }
+
+    /** Convenience for callers that just want the primitive. */
+    public int getMeasureCount() {
+        return measures.getValue();
+    }
+
+    public void setMeasures(Measures measures) {
+        if (measures == null) {
+            throw new IllegalArgumentException("measures cannot be null");
+        }
+        this.measures = measures;
+    }
+
+    // Optional helper if you ever want to add/sub measures from the loop directly:
+    public void addMeasures(int delta) {
+        this.measures = this.measures.add(delta);
+    }
+
+    public void subtractMeasures(int delta) {
+        this.measures = this.measures.subtract(delta);
+    }
+
+    // --- Tempo ---
+
+    public Tempo getTempo() {
+        return tempo;
+    }
+
+    /** Convenience for callers that just want the primitive BPM. */
+    public double getTempoBPM() {
+        return tempo.getBpm();
+    }
+
+    public void setTempo(Tempo tempo) {
+        if (tempo == null) {
+            throw new IllegalArgumentException("tempo cannot be null");
+        }
+        this.tempo = tempo;
+    }
+
+    /** Keeps your old signature but routes through the value object. */
+    public void setTempoBPM(double bpm) {
+        this.tempo = new Tempo(bpm);
+    }
+
+    // Optional helpers that use Tempo.add/subtract:
+    public void increaseTempo(double deltaBpm) {
+        this.tempo = this.tempo.add(deltaBpm);
+    }
+
+    public void decreaseTempo(double deltaBpm) {
+        this.tempo = this.tempo.subtract(deltaBpm);
     }
 }

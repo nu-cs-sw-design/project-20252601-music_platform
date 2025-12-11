@@ -3,6 +3,7 @@ package view;
 import controller.AppController;
 import controller.engine.AudioEngine;
 import model.Loop;
+import model.Measures;
 import model.persistence.LoopJsonStorage;
 import model.persistence.LoopStorage;
 
@@ -16,8 +17,7 @@ public class Main {
             MainView mainView = new MainView();
             AudioEngine audioEngine = new AudioEngine();
 
-            Loop loop = new Loop(4);  // 4-measure loop, initially empty
-
+            Loop loop = new Loop(new Measures(4));
             // Composition root: choose the persistence implementation here
             LoopStorage loopStorage = new LoopJsonStorage(Paths.get("loops"));
 

@@ -2,10 +2,11 @@ package controller.engine;
 
 import model.Loop;
 import model.LoopNote;
+
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.*;
+import java.util.Set;
 
 public class LoopSequencer {
 
@@ -54,7 +55,7 @@ public class LoopSequencer {
         return playing;
     }
 
-// inside LoopSequencer
+    // ---- Internal event class ----
 
     private static class NoteEvent {
         final double beat;
@@ -69,9 +70,12 @@ public class LoopSequencer {
     }
 
     private void runPlaybackLoop(Loop loop) {
-        double bpm = loop.getTempoBPM();
+        // Use Tempo value object
+        final double bpm = loop.getTempo().getBpm();
         final double beatDurationMs = 60000.0 / bpm;
-        final int totalBeatsInLoop = loop.getMeasures() * beatsPerMeasure;
+
+        // Use Measures value object (or loop.getMeasureCount())
+        final int totalBeatsInLoop = loop.getMeasures().getValue() * beatsPerMeasure;
 
         // Build event list (note-on and note-off)
         List<NoteEvent> events = new ArrayList<>();
@@ -83,13 +87,12 @@ public class LoopSequencer {
             events.add(new NoteEvent(endBeat, false, note));    // NOTE_OFF
         }
 
-        // Sort by beat time; if times equal, do NOTE_ONs first (or NOTE_OFFs, up to you)
+        // Sort by beat time; if times equal, NOTE_ON before NOTE_OFF
         events.sort((e1, e2) -> {
             int cmp = Double.compare(e1.beat, e2.beat);
             if (cmp != 0) return cmp;
-            // ensure a deterministic order at same beat
             if (e1.isNoteOn == e2.isNoteOn) return 0;
-            return e1.isNoteOn ? -1 : 1; // NOTE_ON before NOTE_OFF at same time
+            return e1.isNoteOn ? -1 : 1;
         });
 
         System.out.println("LoopSequencer: starting playback at " + bpm + " BPM");
@@ -139,7 +142,6 @@ public class LoopSequencer {
 
         System.out.println("LoopSequencer: playback loop thread exiting.");
     }
-
 
     private void sleepUntil(long targetTimeNs) {
         while (playing) {

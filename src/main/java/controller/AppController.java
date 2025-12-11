@@ -114,13 +114,15 @@ public class AppController implements PianoRollListener, TransportListener, Temp
             return;
         }
 
-        currentLoop.setTempoBPM(bpm);
-        double effectiveBpm = currentLoop.getTempoBPM();
+        Tempo newTempo = new Tempo(bpm);
+        currentLoop.setTempo(newTempo);
 
+        double effectiveBpm = newTempo.getBpm();
         mainView.setTempoDisplay(effectiveBpm);
         mainView.setStatusMessage("Tempo set to " +
                 String.format("%.1f", effectiveBpm) + " BPM.");
     }
+
 
     // --- SaveLoopListener (UC6: save loop) ---
 

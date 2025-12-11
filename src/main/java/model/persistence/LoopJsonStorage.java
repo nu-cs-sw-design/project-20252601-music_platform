@@ -74,8 +74,8 @@ public class LoopJsonStorage implements LoopStorage {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
 
-        sb.append("  \"measures\": ").append(loop.getMeasures()).append(",\n");
-        sb.append("  \"tempoBPM\": ").append(loop.getTempoBPM()).append(",\n");
+        sb.append("  \"measures\": ").append(loop.getMeasures().getValue()).append(",\n");
+        sb.append("  \"tempoBPM\": ").append(loop.getTempo().getBpm()).append(",\n");
 
         sb.append("  \"notes\": [\n");
 

@@ -53,16 +53,21 @@ package view {
 package model {
     class Loop {
         -notes: List<LoopNote>
-        -measures: int
-        -tempoBPM: double
+        -measures: Measures
+        -tempo: Tempo
 
-        +Loop(measures: int)
+        +Loop(measures: Measures)
         +addNote(note: LoopNote): void
         +removeNote(note: LoopNote): void
         +getNotes(): List<LoopNote>
-        +getMeasures(): int
+
+        +getMeasures(): Measures
+        +getMeasureCount(): int
+
+        +getTempo(): Tempo
         +getTempoBPM(): double
-        +setTempoBPM(tempoBPM: double): void
+        +setTempo(tempo: Tempo): void
+        +setTempoBPM(bpm: double): void
     }
 
     class LoopNote {
@@ -102,6 +107,22 @@ package model {
         -value: double
         +BeatDuration(value: double)
         +getValue(): double
+    }
+
+    class Tempo {
+        -bpm: double
+        +Tempo(bpm: double)
+        +getBpm(): double
+        +add(deltaBpm: double): Tempo
+        +subtract(deltaBpm: double): Tempo
+    }
+
+    class Measures {
+        -value: int
+        +Measures(value: int)
+        +getValue(): int
+        +add(delta: int): Measures
+        +subtract(delta: int): Measures
     }
 
     package persistence {
@@ -210,6 +231,9 @@ model.LoopNote --> model.Pitch
 model.LoopNote --> model.BeatPosition
 model.LoopNote --> model.BeatDuration
 model.LoopNote --> model.Velocity
+
+model.Loop --> model.Measures
+model.Loop --> model.Tempo
 
 controller.engine.LoopSequencer --> controller.engine.AudioEngine
 controller.engine.LoopSequencer --> model.Loop
