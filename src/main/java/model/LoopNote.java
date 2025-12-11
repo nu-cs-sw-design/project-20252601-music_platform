@@ -1,46 +1,56 @@
 package model;
 
-/**
- * Represents a single note in the loop.
- * Immutable object with private fields.
- */
 public class LoopNote {
 
-    private final int pitch;
-    private final double startBeat;
-    private final double durationBeats;
-    private final int velocity;
+    private final Pitch pitch;
+    private final BeatPosition startBeat;
+    private final BeatDuration durationBeats;
+    private final Velocity velocity;
 
-    public LoopNote(int pitch, double startBeat, double durationBeats, int velocity) {
+    public LoopNote(Pitch pitch,
+                    BeatPosition startBeat,
+                    BeatDuration durationBeats,
+                    Velocity velocity) {
+        if (pitch == null || startBeat == null || durationBeats == null || velocity == null) {
+            throw new IllegalArgumentException("LoopNote fields cannot be null");
+        }
         this.pitch = pitch;
         this.startBeat = startBeat;
         this.durationBeats = durationBeats;
         this.velocity = velocity;
     }
 
-    public int getPitch() {
+    public Pitch getPitch() {
         return pitch;
     }
 
-    public double getStartBeat() {
+    public BeatPosition getStartBeat() {
         return startBeat;
     }
 
-    public double getDurationBeats() {
+    public BeatDuration getDurationBeats() {
         return durationBeats;
     }
 
-    public int getVelocity() {
+    public Velocity getVelocity() {
         return velocity;
     }
 
-    @Override
-    public String toString() {
-        return "LoopNote{" +
-                "pitch=" + pitch +
-                ", startBeat=" + startBeat +
-                ", durationBeats=" + durationBeats +
-                ", velocity=" + velocity +
-                '}';
+    // Optional convenience methods so older code can still get primitives easily:
+
+    public int getPitchMidiNumber() {
+        return pitch.getMidiNumber();
+    }
+
+    public double getStartBeatValue() {
+        return startBeat.getValue();
+    }
+
+    public double getDurationBeatsValue() {
+        return durationBeats.getValue();
+    }
+
+    public int getVelocityValue() {
+        return velocity.getValue();
     }
 }

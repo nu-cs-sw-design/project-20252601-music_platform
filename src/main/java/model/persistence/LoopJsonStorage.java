@@ -1,6 +1,5 @@
 package model.persistence;
 
-
 import model.Loop;
 import model.LoopNote;
 
@@ -13,7 +12,7 @@ import java.util.List;
 /**
  * Handles saving Loop data as JSON files on disk.
  */
-public class LoopJsonStorage {
+public class LoopJsonStorage implements LoopStorage {
 
     private final Path baseDirectory;
 
@@ -32,7 +31,8 @@ public class LoopJsonStorage {
                 Files.createDirectories(baseDirectory);
             }
         } catch (IOException e) {
-            System.err.println("LoopJsonStorage: failed to create directory " + baseDirectory + ": " + e.getMessage());
+            System.err.println("LoopJsonStorage: failed to create directory "
+                    + baseDirectory + ": " + e.getMessage());
         }
     }
 
@@ -42,6 +42,7 @@ public class LoopJsonStorage {
      * @param loop     the loop to save
      * @param fileName file name (e.g. "loop-1.json")
      */
+    @Override
     public void saveLoop(Loop loop, String fileName) throws IOException {
         if (loop == null) {
             throw new IllegalArgumentException("loop cannot be null");
@@ -82,10 +83,11 @@ public class LoopJsonStorage {
         for (int i = 0; i < notes.size(); i++) {
             LoopNote note = notes.get(i);
             sb.append("    {\n");
-            sb.append("      \"pitch\": ").append(note.getPitch()).append(",\n");
-            sb.append("      \"startBeat\": ").append(note.getStartBeat()).append(",\n");
-            sb.append("      \"durationBeats\": ").append(note.getDurationBeats()).append(",\n");
-            sb.append("      \"velocity\": ").append(note.getVelocity()).append("\n");
+            sb.append("      \"pitch\": ").append(note.getPitch().getMidiNumber()).append(",\n");
+            sb.append("      \"startBeat\": ").append(note.getStartBeat().getValue()).append(",\n");
+            sb.append("      \"durationBeats\": ").append(note.getDurationBeats().getValue()).append(",\n");
+            sb.append("      \"velocity\": ").append(note.getVelocity().getValue()).append("\n");
+
             sb.append("    }");
             if (i < notes.size() - 1) {
                 sb.append(",");

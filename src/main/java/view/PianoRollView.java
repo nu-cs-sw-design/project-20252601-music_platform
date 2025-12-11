@@ -149,9 +149,9 @@ public class PianoRollView extends JPanel {
                                       int gridWidth, int gridHeight,
                                       int totalBeats, double beatWidth, double rowHeight) {
 
-        double startBeat = note.getStartBeat();
-        double durationBeats = note.getDurationBeats();
-        int pitch = note.getPitch();
+        double startBeat = note.getStartBeat().getValue();
+        double durationBeats = note.getDurationBeats().getValue();
+        int pitch = note.getPitch().getMidiNumber();
 
         int pitchIndex = Math.floorMod(pitch, numPitches);
 

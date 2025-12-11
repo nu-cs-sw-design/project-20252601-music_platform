@@ -1,7 +1,7 @@
 @startuml
-title LoopSketch Design
+title LoopSketch Design (with value objects and swappable LoopStorage)
 
-package View {
+package view {
     class Main {
         +{static} main(args: String[]): void
     }
@@ -13,12 +13,10 @@ package View {
         +MainView()
         +showMainScreen(loop: Loop): void
         +showAudioError(): void
-
         +setPianoRollListener(listener: PianoRollListener): void
         +setTransportListener(listener: TransportListener): void
         +setTempoListener(listener: TempoListener): void
         +setSaveLoopListener(listener: SaveLoopListener): void
-
         +refreshPianoRoll(): void
         +setStatusMessage(message: String): void
         +setTempoDisplay(bpm: double): void
@@ -52,7 +50,7 @@ package View {
     }
 }
 
-package Model {
+package model {
     class Loop {
         -notes: List<LoopNote>
         -measures: int
@@ -68,20 +66,50 @@ package Model {
     }
 
     class LoopNote {
-        -pitch: int
-        -startBeat: double
-        -durationBeats: double
-        -velocity: int
+        -pitch: Pitch
+        -startBeat: BeatPosition
+        -durationBeats: BeatDuration
+        -velocity: Velocity
 
-        +LoopNote(pitch: int, startBeat: double, durationBeats: double, velocity: int)
-        +getPitch(): int
-        +getStartBeat(): double
-        +getDurationBeats(): double
-        +getVelocity(): int
+        +LoopNote(pitch: Pitch, startBeat: BeatPosition, durationBeats: BeatDuration, velocity: Velocity)
+        +getPitch(): Pitch
+        +getStartBeat(): BeatPosition
+        +getDurationBeats(): BeatDuration
+        +getVelocity(): Velocity
+    }
+
+    class Pitch {
+        -midiNumber: int
+        +Pitch(midiNumber: int)
+        +getMidiNumber(): int
+        +transpose(semitones: int): Pitch
+    }
+
+    class Velocity {
+        -value: int
+        +Velocity(value: int)
+        +getValue(): int
+        +scaled(factor: double): Velocity
+    }
+
+    class BeatPosition {
+        -value: double
+        +BeatPosition(value: double)
+        +getValue(): double
+    }
+
+    class BeatDuration {
+        -value: double
+        +BeatDuration(value: double)
+        +getValue(): double
     }
 
     package persistence {
-        class LoopJsonStorage {
+        interface LoopStorage {
+            +saveLoop(loop: Loop, fileName: String): void
+        }
+
+        class LoopJsonStorage implements LoopStorage {
             -baseDirectory: Path
 
             +LoopJsonStorage(baseDirectory: Path)
@@ -90,17 +118,16 @@ package Model {
     }
 }
 
-package Controller {
+package controller {
     class AppController {
         -audioEngine: AudioEngine
         -loopSequencer: LoopSequencer
-        -loopStorage: LoopJsonStorage
         -mainView: MainView
         -currentLoop: Loop
+        -loopStorage: LoopStorage
 
-        +AppController(mainView: MainView, audioEngine: AudioEngine, loop: Loop)
+        +AppController(mainView: MainView, audioEngine: AudioEngine, loop: Loop, loopStorage: LoopStorage)
         +startApplication(): void
-
         +onEmptyCellClicked(beat: double, pitchIndex: int): void
         +onNoteClicked(note: LoopNote): void
         +onPlayRequested(): void
@@ -144,43 +171,53 @@ package Controller {
             +play(loop: Loop): void
             +pause(): void
             +isPlaying(): boolean
-            +runPlaybackLoop(Loop)
+            +runPlaybackLoop(loop: Loop): void
         }
     }
 }
 
 ' --- Relationships ---
 
-Main ..> AppController : "creates and calls"
-Main ..> MainView
-Main ..> AudioEngine
-Main ..> Loop : "creates 4-measure loop"
+view.Main ..> controller.AppController : "creates and calls"
+view.Main ..> view.MainView
+view.Main ..> controller.engine.AudioEngine
+view.Main ..> model.Loop : "creates 4-measure loop"
+view.Main ..> model.persistence.LoopJsonStorage : "creates concrete storage"
+view.Main ..> model.persistence.LoopStorage : "passes as interface"
 
-MainView --> PianoRollView : "contains"
-MainView --> Loop : "displays"
-MainView --> PianoRollListener : "wires piano roll"
-MainView --> TransportListener : "wires transport"
-MainView --> TempoListener : "wires tempo"
-MainView --> SaveLoopListener : "wires save loop"
+view.MainView --> view.PianoRollView : "contains"
+view.MainView --> model.Loop : "displays"
+view.MainView --> view.PianoRollListener : "wires piano roll"
+view.MainView --> view.TransportListener : "wires transport"
+view.MainView --> view.TempoListener : "wires tempo"
+view.MainView --> view.SaveLoopListener : "wires save loop"
 
-PianoRollView --> Loop : "renders"
-PianoRollView ..> LoopNote : "hit-detects notes"
-PianoRollView --> PianoRollListener : "notifies on click"
+view.PianoRollView --> model.Loop : "renders"
+view.PianoRollView ..> model.LoopNote : "hit-detects notes"
+view.PianoRollView --> view.PianoRollListener : "notifies on click"
 
-AppController --> MainView
-AppController --> AudioEngine
-AppController --> LoopSequencer
-AppController --> LoopJsonStorage
-AppController --> Loop : "currentLoop"
+controller.AppController --> view.MainView
+controller.AppController --> controller.engine.AudioEngine
+controller.AppController --> controller.engine.LoopSequencer
+controller.AppController --> model.persistence.LoopStorage
+controller.AppController --> model.Loop : "currentLoop"
 
-Controller.engine.AudioEngine --> Controller.engine.Instrument : "default piano"
+controller.engine.AudioEngine --> controller.engine.Instrument : "default piano"
 
-Loop --> LoopNote : "contains notes"
+model.Loop --> model.LoopNote : "contains notes"
 
-Controller.engine.LoopSequencer --> Controller.engine.AudioEngine
-Controller.engine.LoopSequencer --> Loop
+model.LoopNote --> model.Pitch
+model.LoopNote --> model.BeatPosition
+model.LoopNote --> model.BeatDuration
+model.LoopNote --> model.Velocity
 
-LoopJsonStorage --> Loop
-LoopJsonStorage ..> LoopNote
+controller.engine.LoopSequencer --> controller.engine.AudioEngine
+controller.engine.LoopSequencer --> model.Loop
+
+model.persistence.LoopStorage --> model.Loop
+model.persistence.LoopStorage ..> model.LoopNote
+
+model.persistence.LoopJsonStorage --> model.Loop
+model.persistence.LoopJsonStorage ..> model.LoopNote
 
 @enduml

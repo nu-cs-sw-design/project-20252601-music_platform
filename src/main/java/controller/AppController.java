@@ -2,19 +2,15 @@ package controller;
 
 import controller.engine.AudioEngine;
 import controller.engine.LoopSequencer;
-import model.Loop;
-import model.LoopNote;
+import model.*;
+import model.persistence.LoopStorage;
 import view.MainView;
 import view.PianoRollListener;
 import view.TransportListener;
 import view.TempoListener;
 import view.SaveLoopListener;
 
-import model.persistence.LoopJsonStorage;
-
 import java.io.IOException;
-import java.nio.file.Paths;
-
 
 public class AppController implements PianoRollListener, TransportListener, TempoListener, SaveLoopListener {
 
@@ -22,19 +18,19 @@ public class AppController implements PianoRollListener, TransportListener, Temp
     private final LoopSequencer loopSequencer;
     private final MainView mainView;
     private final Loop currentLoop;
-    private final LoopJsonStorage loopStorage;
+    private final LoopStorage loopStorage;
 
-
-    public AppController(MainView mainView, AudioEngine audioEngine, Loop loop) {
+    public AppController(MainView mainView,
+                         AudioEngine audioEngine,
+                         Loop loop,
+                         LoopStorage loopStorage) {
         this.mainView = mainView;
         this.audioEngine = audioEngine;
         this.currentLoop = loop;
+        this.loopStorage = loopStorage;
 
         // 4 beats per measure for now
         this.loopSequencer = new LoopSequencer(audioEngine, 4);
-
-        // Save loops into a "loops" directory in the project working dir
-        this.loopStorage = new LoopJsonStorage(Paths.get("loops"));
 
         // Wire listeners
         this.mainView.setPianoRollListener(this);
@@ -42,7 +38,6 @@ public class AppController implements PianoRollListener, TransportListener, Temp
         this.mainView.setTempoListener(this);
         this.mainView.setSaveLoopListener(this);
     }
-
 
     public void startApplication() {
         boolean success = audioEngine.initialize();
@@ -63,15 +58,19 @@ public class AppController implements PianoRollListener, TransportListener, Temp
             mainView.setStatusMessage("Stop playback before saving the loop.");
             return;
         }
-        int pitch = pitchIndex;            // simple mapping for now
-        double durationBeats = 1.0;        // 1 beat
-        int velocity = 100;
 
-        LoopNote note = new LoopNote(pitch, beat, durationBeats, velocity);
+        // Map UI grid to domain concepts
+        Pitch pitch = new Pitch(pitchIndex);                 // still a simple mapping
+        BeatPosition startBeat = new BeatPosition(beat);
+        BeatDuration durationBeats = new BeatDuration(1.0);  // 1 beat for now
+        Velocity velocity = new Velocity(100);               // fixed velocity for now
+
+        LoopNote note = new LoopNote(pitch, startBeat, durationBeats, velocity);
         currentLoop.addNote(note);
 
         mainView.refreshPianoRoll();
     }
+
 
     @Override
     public void onNoteClicked(LoopNote note) {
@@ -127,8 +126,6 @@ public class AppController implements PianoRollListener, TransportListener, Temp
 
     @Override
     public void onSaveLoopRequested() {
-        // You could forbid saving while playing if you want; for now we allow it.
-
         if (loopSequencer.isPlaying()) {
             mainView.setStatusMessage("Stop playback before saving the loop.");
             return;
@@ -144,5 +141,4 @@ public class AppController implements PianoRollListener, TransportListener, Temp
             mainView.setStatusMessage("Failed to save loop. See console for details.");
         }
     }
-
 }

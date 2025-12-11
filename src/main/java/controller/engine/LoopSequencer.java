@@ -76,8 +76,8 @@ public class LoopSequencer {
         // Build event list (note-on and note-off)
         List<NoteEvent> events = new ArrayList<>();
         for (LoopNote note : loop.getNotes()) {
-            double startBeat = note.getStartBeat();
-            double endBeat = startBeat + note.getDurationBeats();
+            double startBeat = note.getStartBeat().getValue();
+            double endBeat = startBeat + note.getDurationBeats().getValue();
 
             events.add(new NoteEvent(startBeat, true, note));   // NOTE_ON
             events.add(new NoteEvent(endBeat, false, note));    // NOTE_OFF
@@ -107,8 +107,8 @@ public class LoopSequencer {
                 sleepUntil(eventTimeNs);
                 if (!playing) break;
 
-                int pitch = event.note.getPitch();
-                int velocity = event.note.getVelocity();
+                int pitch = event.note.getPitch().getMidiNumber();
+                int velocity = event.note.getVelocity().getValue();
 
                 if (event.isNoteOn) {
                     System.out.println("LoopSequencer: noteOn pitch=" + pitch +
