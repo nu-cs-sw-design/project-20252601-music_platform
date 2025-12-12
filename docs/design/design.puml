@@ -90,15 +90,12 @@ package model {
         +getNotes(): List<LoopNote>
 
         +getMeasures(): Measures
-        +getMeasureCount(): int
         +setMeasures(measures: Measures): void
         +addMeasures(delta: int): void
         +subtractMeasures(delta: int): void
 
         +getTempo(): Tempo
-        +getTempoBPM(): double
         +setTempo(tempo: Tempo): void
-        +setTempoBPM(bpm: double): void
         +increaseTempo(deltaBpm: double): void
         +decreaseTempo(deltaBpm: double): void
     }
@@ -154,6 +151,7 @@ package model {
         +add(deltaBpm: double): Tempo
         +subtract(deltaBpm: double): Tempo
         +toString(): String
+        -{static} clamp(value): double
     }
 
     class Measures {

@@ -1,36 +1,33 @@
 package model;
 
-/**
- * Represents musical tempo in beats per minute (BPM).
- * Encapsulates validation and simple arithmetic operations.
- */
 public final class Tempo {
+
+    public static final double MIN_BPM = 20.0;
+    public static final double MAX_BPM = 300.0;
 
     private final double bpm;
 
     public Tempo(double bpm) {
-        if (bpm <= 0.0) {
-            throw new IllegalArgumentException("Tempo BPM must be positive, got: " + bpm);
-        }
-        this.bpm = bpm;
+        this.bpm = clamp(bpm);
     }
 
     public double getBpm() {
         return bpm;
     }
 
-    /**
-     * Returns a new Tempo with BPM increased by deltaBpm.
-     */
     public Tempo add(double deltaBpm) {
         return new Tempo(bpm + deltaBpm);
     }
 
-    /**
-     * Returns a new Tempo with BPM decreased by deltaBpm.
-     */
     public Tempo subtract(double deltaBpm) {
         return new Tempo(bpm - deltaBpm);
+    }
+
+    private static double clamp(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            throw new IllegalArgumentException("Tempo BPM must be a real number, got: " + value);
+        }
+        return Math.max(MIN_BPM, Math.min(MAX_BPM, value));
     }
 
     @Override

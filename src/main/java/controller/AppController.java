@@ -87,7 +87,7 @@ public class AppController implements PianoRollListener, TransportListener, Temp
     @Override
     public void onPlayRequested() {
         mainView.setStatusMessage("Playing loop at " +
-                String.format("%.1f", currentLoop.getTempoBPM()) + " BPM...");
+                String.format("%.1f", currentLoop.getTempo().getBpm()) + " BPM...");
         loopSequencer.play(currentLoop);
     }
 

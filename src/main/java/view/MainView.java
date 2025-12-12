@@ -106,7 +106,7 @@ public class MainView extends JFrame {
         pianoRollView.setLoop(loop);
 
         // Initialize tempo display from model
-        setTempoDisplay(loop.getTempoBPM());
+        setTempoDisplay(loop.getTempo().getBpm());
 
         statusLabel.setText("System ready. Add notes, set tempo, then Play.");
         if (!isVisible()) {

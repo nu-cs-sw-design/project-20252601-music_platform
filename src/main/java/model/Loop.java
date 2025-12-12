@@ -42,9 +42,6 @@ public class Loop {
         return measures;
     }
 
-    public int getMeasureCount() {
-        return measures.getValue();
-    }
 
     public void setMeasures(Measures measures) {
         if (measures == null) {
@@ -67,19 +64,11 @@ public class Loop {
         return tempo;
     }
 
-    public double getTempoBPM() {
-        return tempo.getBpm();
-    }
-
     public void setTempo(Tempo tempo) {
         if (tempo == null) {
             throw new IllegalArgumentException("tempo cannot be null");
         }
         this.tempo = tempo;
-    }
-
-    public void setTempoBPM(double bpm) {
-        this.tempo = new Tempo(bpm);
     }
 
     public void increaseTempo(double deltaBpm) {
