@@ -1,5 +1,5 @@
 @startuml
-title LoopSketch Design (with value objects and swappable LoopStorage)
+title LoopSketch Design
 
 package view {
     class Main {
@@ -7,28 +7,55 @@ package view {
     }
 
     class MainView {
+        -statusLabel: JLabel
         -pianoRollView: PianoRollView
         -currentLoop: Loop
+
+        -transportListener: TransportListener
+        -pianoRollListener: PianoRollListener
+        -tempoListener: TempoListener
+        -saveLoopListener: SaveLoopListener
+
+        -tempoField: JTextField
 
         +MainView()
         +showMainScreen(loop: Loop): void
         +showAudioError(): void
+
         +setPianoRollListener(listener: PianoRollListener): void
-        +setTransportListener(listener: TransportListener): void
-        +setTempoListener(listener: TempoListener): void
-        +setSaveLoopListener(listener: SaveLoopListener): void
+        +setTransportListener(transportListener: TransportListener): void
+        +setTempoListener(tempoListener: TempoListener): void
+        +setSaveLoopListener(saveLoopListener: SaveLoopListener): void
+
         +refreshPianoRoll(): void
         +setStatusMessage(message: String): void
         +setTempoDisplay(bpm: double): void
     }
 
+
     class PianoRollView {
+        -beatsPerMeasure: int
+        -stepsPerBeat: int
+        -numPitches: int
+
         -loop: Loop
         -listener: PianoRollListener
+
+        -{static} PADDING_LEFT: int
+        -{static} PADDING_RIGHT: int
+        -{static} PADDING_TOP: int
+        -{static} PADDING_BOTTOM: int
 
         +PianoRollView()
         +setLoop(loop: Loop): void
         +setPianoRollListener(listener: PianoRollListener): void
+
+        #paintComponent(g: Graphics): void
+
+        -drawGrid(g2: Graphics2D, gridX: int, gridY: int, gridWidth: int, gridHeight: int, measures: int): void
+        -drawNotes(g2: Graphics2D, gridX: int, gridY: int, gridWidth: int, gridHeight: int, measures: int): void
+        -computeNoteRect(note: LoopNote, gridX: int, gridY: int, gridWidth: int, gridHeight: int, totalBeats: int, beatWidth: double, rowHeight: double): Rectangle
+        -handleClick(mouseX: int, mouseY: int): void
     }
 
     interface PianoRollListener {
@@ -57,18 +84,25 @@ package model {
         -tempo: Tempo
 
         +Loop(measures: Measures)
+
         +addNote(note: LoopNote): void
         +removeNote(note: LoopNote): void
         +getNotes(): List<LoopNote>
 
         +getMeasures(): Measures
         +getMeasureCount(): int
+        +setMeasures(measures: Measures): void
+        +addMeasures(delta: int): void
+        +subtractMeasures(delta: int): void
 
         +getTempo(): Tempo
         +getTempoBPM(): double
         +setTempo(tempo: Tempo): void
         +setTempoBPM(bpm: double): void
+        +increaseTempo(deltaBpm: double): void
+        +decreaseTempo(deltaBpm: double): void
     }
+
 
     class LoopNote {
         -pitch: Pitch
@@ -88,6 +122,7 @@ package model {
         +Pitch(midiNumber: int)
         +getMidiNumber(): int
         +transpose(semitones: int): Pitch
+        +toString(): String
     }
 
     class Velocity {
@@ -95,18 +130,21 @@ package model {
         +Velocity(value: int)
         +getValue(): int
         +scaled(factor: double): Velocity
+        +toString(): String
     }
 
     class BeatPosition {
         -value: double
         +BeatPosition(value: double)
         +getValue(): double
+        +toString(): String
     }
 
     class BeatDuration {
         -value: double
         +BeatDuration(value: double)
         +getValue(): double
+        +toString(): String
     }
 
     class Tempo {
@@ -115,6 +153,7 @@ package model {
         +getBpm(): double
         +add(deltaBpm: double): Tempo
         +subtract(deltaBpm: double): Tempo
+        +toString(): String
     }
 
     class Measures {
@@ -123,6 +162,7 @@ package model {
         +getValue(): int
         +add(delta: int): Measures
         +subtract(delta: int): Measures
+        +toString(): String
     }
 
     package persistence {
@@ -134,7 +174,9 @@ package model {
             -baseDirectory: Path
 
             +LoopJsonStorage(baseDirectory: Path)
+            -ensureDirectoryExists(): void
             +saveLoop(loop: Loop, fileName: String): void
+            -buildJson(loop: Loop): String
         }
     }
 }
@@ -147,16 +189,22 @@ package controller {
         -currentLoop: Loop
         -loopStorage: LoopStorage
 
-        +AppController(mainView: MainView, audioEngine: AudioEngine, loop: Loop, loopStorage: LoopStorage)
+        +AppController(mainView: MainView,
+                       audioEngine: AudioEngine,
+                       loop: Loop,
+                       loopStorage: LoopStorage)
+
         +startApplication(): void
+
         +onEmptyCellClicked(beat: double, pitchIndex: int): void
         +onNoteClicked(note: LoopNote): void
+
         +onPlayRequested(): void
         +onPauseRequested(): void
+
         +onTempoChangeRequested(bpmText: String): void
         +onSaveLoopRequested(): void
     }
-
     AppController --|> PianoRollListener
     AppController --|> TransportListener
     AppController --|> TempoListener
@@ -164,36 +212,61 @@ package controller {
 
     package engine {
         interface Instrument {
-            +noteOn(pitch: int, vel: int): void
-            +noteOff(pitch: int): void
+            +noteOn(pitch: Pitch, velocity: Velocity): void
+            +noteOff(pitch: Pitch): void
             +close(): void
         }
 
+
         class PianoInstrument implements Instrument {
+            -synth: Synthesizer
+            -channel: MidiChannel
+            -{static} BASE_MIDI_NOTE: int
+
             +PianoInstrument()
-            +noteOn(pitch: int, vel: int): void
-            +noteOff(pitch: int): void
+            +noteOn(pitch: Pitch, velocity: Velocity): void
+            +noteOff(pitch: Pitch): void
             +close(): void
         }
+
+
 
         class AudioEngine {
             -instrument: Instrument
+
             +AudioEngine()
             +initialize(): boolean
-            +noteOn(pitch: int, vel: int): void
-            +noteOff(pitch: int): void
+            +noteOn(pitch: Pitch, velocity: Velocity): void
+            +noteOff(pitch: Pitch): void
         }
+
 
         class LoopSequencer {
             -audioEngine: AudioEngine
             -beatsPerMeasure: int
 
+            -playing: boolean
+            -playbackThread: Thread
+
             +LoopSequencer(audioEngine: AudioEngine, beatsPerMeasure: int)
             +play(loop: Loop): void
             +pause(): void
             +isPlaying(): boolean
-            +runPlaybackLoop(loop: Loop): void
+
+            -runPlaybackLoop(loop: Loop): void
+            -sleepUntil(targetTimeNs: long): void
+            -stopAllNotes(): void
         }
+
+        -class NoteEvent {
+            ~beat: double
+            ~isNoteOn: boolean
+            ~note: LoopNote
+        }
+
+
+        NoteEvent --|> LoopSequencer : "Internal private class"
+
     }
 }
 

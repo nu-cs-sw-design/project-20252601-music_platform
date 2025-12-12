@@ -1,20 +1,16 @@
 package controller.engine;
 
-import javax.sound.midi.MidiChannel;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Synthesizer;
+import model.Pitch;
+import model.Velocity;
 
-/**
- * Simple piano-like instrument using Java's built-in MIDI synthesizer.
- */
+import javax.sound.midi.*;
+
 public class PianoInstrument implements Instrument {
 
     private Synthesizer synth;
     private MidiChannel channel;
 
-    // Middle C = 60 in MIDI; we’ll treat pitch=0 as middle C
-    private static final int BASE_MIDI_NOTE = 60;
+    private static final int BASE_MIDI_NOTE = 60; // Middle C
 
     public PianoInstrument() {
         try {
@@ -26,44 +22,48 @@ public class PianoInstrument implements Instrument {
                 channel = channels[0];
             }
 
-            System.out.println("PianoInstrument: created default piano instrument (MIDI synth opened).");
+            System.out.println("PianoInstrument: MIDI synth opened.");
         } catch (MidiUnavailableException e) {
-            System.err.println("PianoInstrument: MIDI device unavailable: " + e.getMessage());
+            System.err.println("PianoInstrument: MIDI unavailable: " + e.getMessage());
         }
     }
 
     @Override
-    public void noteOn(int pitch, int vel) {
+    public void noteOn(Pitch pitch, Velocity velocity) {
         if (channel == null) {
-            System.err.println("PianoInstrument: no MIDI channel, cannot play note.");
+            System.err.println("PianoInstrument: no MIDI channel.");
             return;
         }
 
-        // Map your pitch index (0..11, etc.) to a MIDI note number
-        int midiNote = BASE_MIDI_NOTE + pitch;
+        int midiNote = BASE_MIDI_NOTE + pitch.getMidiNumber();
+        int vel = velocity.getValue();
 
-        System.out.printf("PianoInstrument: noteOn pitch=%d (midiNote=%d) vel=%d%n",
-                pitch, midiNote, vel);
+        System.out.printf(
+                "PianoInstrument: noteOn pitch=%d midiNote=%d vel=%d%n",
+                pitch.getMidiNumber(), midiNote, vel);
+
         channel.noteOn(midiNote, vel);
     }
 
     @Override
-    public void noteOff(int pitch) {
+    public void noteOff(Pitch pitch) {
         if (channel == null) {
-            System.err.println("PianoInstrument: no MIDI channel, cannot stop note.");
+            System.err.println("PianoInstrument: no MIDI channel.");
             return;
         }
 
-        int midiNote = BASE_MIDI_NOTE + pitch;
+        int midiNote = BASE_MIDI_NOTE + pitch.getMidiNumber();
 
-        System.out.printf("PianoInstrument: noteOff pitch=%d (midiNote=%d)%n",
-                pitch, midiNote);
+        System.out.printf(
+                "PianoInstrument: noteOff pitch=%d midiNote=%d%n",
+                pitch.getMidiNumber(), midiNote);
+
         channel.noteOff(midiNote);
     }
 
     @Override
     public void close() {
-        System.out.println("PianoInstrument: closing instrument.");
+        System.out.println("PianoInstrument: closing synth.");
         if (synth != null && synth.isOpen()) {
             synth.close();
         }

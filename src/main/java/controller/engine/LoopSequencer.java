@@ -2,6 +2,8 @@ package controller.engine;
 
 import model.Loop;
 import model.LoopNote;
+import model.Pitch;
+import model.Velocity;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -74,7 +76,7 @@ public class LoopSequencer {
         final double bpm = loop.getTempo().getBpm();
         final double beatDurationMs = 60000.0 / bpm;
 
-        // Use Measures value object (or loop.getMeasureCount())
+        // Use Measures value object
         final int totalBeatsInLoop = loop.getMeasures().getValue() * beatsPerMeasure;
 
         // Build event list (note-on and note-off)
@@ -99,7 +101,7 @@ public class LoopSequencer {
 
         while (playing) {
             long loopStartNs = System.nanoTime();
-            Set<Integer> activePitches = new HashSet<>();
+            Set<Pitch> activePitches = new HashSet<>();
 
             for (NoteEvent event : events) {
                 if (!playing) break;
@@ -110,24 +112,27 @@ public class LoopSequencer {
                 sleepUntil(eventTimeNs);
                 if (!playing) break;
 
-                int pitch = event.note.getPitch().getMidiNumber();
-                int velocity = event.note.getVelocity().getValue();
+                Pitch pitch = event.note.getPitch();
+                Velocity velocity = event.note.getVelocity();
 
                 if (event.isNoteOn) {
-                    System.out.println("LoopSequencer: noteOn pitch=" + pitch +
-                            " vel=" + velocity + " at beat=" + event.beat);
+                    System.out.println("LoopSequencer: noteOn pitch=" +
+                            pitch.getMidiNumber() + " vel=" + velocity.getValue() +
+                            " at beat=" + event.beat);
+
                     audioEngine.noteOn(pitch, velocity);
                     activePitches.add(pitch);
                 } else {
-                    System.out.println("LoopSequencer: noteOff pitch=" + pitch +
-                            " at beat=" + event.beat);
+                    System.out.println("LoopSequencer: noteOff pitch=" +
+                            pitch.getMidiNumber() + " at beat=" + event.beat);
+
                     audioEngine.noteOff(pitch);
                     activePitches.remove(pitch);
                 }
             }
 
             // turn off any leftovers (in case we stopped early)
-            for (int pitch : activePitches) {
+            for (Pitch pitch : activePitches) {
                 audioEngine.noteOff(pitch);
             }
             activePitches.clear();

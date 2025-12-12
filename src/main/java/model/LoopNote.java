@@ -35,22 +35,4 @@ public class LoopNote {
     public Velocity getVelocity() {
         return velocity;
     }
-
-    // Optional convenience methods so older code can still get primitives easily:
-
-    public int getPitchMidiNumber() {
-        return pitch.getMidiNumber();
-    }
-
-    public double getStartBeatValue() {
-        return startBeat.getValue();
-    }
-
-    public double getDurationBeatsValue() {
-        return durationBeats.getValue();
-    }
-
-    public int getVelocityValue() {
-        return velocity.getValue();
-    }
 }

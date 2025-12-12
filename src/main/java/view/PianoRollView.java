@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 
 public class PianoRollView extends JPanel {
 
-    private int measures = 4;
     private int beatsPerMeasure = 4;
     private int stepsPerBeat = 4;
     private int numPitches = 12;
@@ -61,14 +60,20 @@ public class PianoRollView extends JPanel {
         int gridWidth = width - PADDING_LEFT - PADDING_RIGHT;
         int gridHeight = height - PADDING_TOP - PADDING_BOTTOM;
 
-        drawGrid(g2, gridX, gridY, gridWidth, gridHeight);
+        // Use model’s measure count if we have a loop; default to 4 otherwise
+        int measuresToDraw = (loop != null) ? loop.getMeasures().getValue() : 4;
+
+        drawGrid(g2, gridX, gridY, gridWidth, gridHeight, measuresToDraw);
 
         if (loop != null) {
-            drawNotes(g2, gridX, gridY, gridWidth, gridHeight);
+            drawNotes(g2, gridX, gridY, gridWidth, gridHeight, measuresToDraw);
         }
     }
 
-    private void drawGrid(Graphics2D g2, int gridX, int gridY, int gridWidth, int gridHeight) {
+    private void drawGrid(Graphics2D g2,
+                          int gridX, int gridY,
+                          int gridWidth, int gridHeight,
+                          int measures) {
         g2.setColor(new Color(40, 40, 40));
         g2.fillRect(gridX, gridY, gridWidth, gridHeight);
 
@@ -122,7 +127,11 @@ public class PianoRollView extends JPanel {
         }
     }
 
-    private void drawNotes(Graphics2D g2, int gridX, int gridY, int gridWidth, int gridHeight) {
+    private void drawNotes(Graphics2D g2,
+                           int gridX, int gridY,
+                           int gridWidth, int gridHeight,
+                           int measures) {
+
         if (loop.getNotes().isEmpty()) {
             return;
         }
@@ -184,7 +193,9 @@ public class PianoRollView extends JPanel {
             return;
         }
 
-        int totalBeats = measures * beatsPerMeasure;
+        // Use loop’s measure count here too
+        int measuresForClick = (loop != null) ? loop.getMeasures().getValue() : 4;
+        int totalBeats = measuresForClick * beatsPerMeasure;
         double beatWidth = (double) gridWidth / totalBeats;
         double rowHeight = (double) gridHeight / numPitches;
 

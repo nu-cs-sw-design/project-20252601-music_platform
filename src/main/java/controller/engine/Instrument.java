@@ -1,14 +1,10 @@
 package controller.engine;
 
-/**
- * Strategy interface for instruments.
- * Different instruments (piano, guitar, drums, etc.) can implement this.
- */
+import model.Pitch;
+import model.Velocity;
+
 public interface Instrument {
-
-    void noteOn(int pitch, int vel);
-
-    void noteOff(int pitch);
-
+    void noteOn(Pitch pitch, Velocity velocity);
+    void noteOff(Pitch pitch);
     void close();
 }

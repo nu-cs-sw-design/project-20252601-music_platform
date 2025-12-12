@@ -13,14 +13,6 @@ public class Loop {
     private Measures measures;
     private Tempo tempo;
 
-    /**
-     * Legacy convenience constructor: still allow passing an int.
-     * Internally wraps it in Measures.
-     */
-    public Loop(int measures) {
-        this(new Measures(measures));
-    }
-
     public Loop(Measures measures) {
         if (measures == null) {
             throw new IllegalArgumentException("measures cannot be null");
@@ -50,7 +42,6 @@ public class Loop {
         return measures;
     }
 
-    /** Convenience for callers that just want the primitive. */
     public int getMeasureCount() {
         return measures.getValue();
     }
@@ -62,7 +53,6 @@ public class Loop {
         this.measures = measures;
     }
 
-    // Optional helper if you ever want to add/sub measures from the loop directly:
     public void addMeasures(int delta) {
         this.measures = this.measures.add(delta);
     }
@@ -77,7 +67,6 @@ public class Loop {
         return tempo;
     }
 
-    /** Convenience for callers that just want the primitive BPM. */
     public double getTempoBPM() {
         return tempo.getBpm();
     }
@@ -89,12 +78,10 @@ public class Loop {
         this.tempo = tempo;
     }
 
-    /** Keeps your old signature but routes through the value object. */
     public void setTempoBPM(double bpm) {
         this.tempo = new Tempo(bpm);
     }
 
-    // Optional helpers that use Tempo.add/subtract:
     public void increaseTempo(double deltaBpm) {
         this.tempo = this.tempo.add(deltaBpm);
     }

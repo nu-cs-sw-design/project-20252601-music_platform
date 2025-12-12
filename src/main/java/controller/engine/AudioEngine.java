@@ -1,5 +1,8 @@
 package controller.engine;
 
+import model.Pitch;
+import model.Velocity;
+
 public class AudioEngine {
 
     private Instrument instrument;
@@ -14,43 +17,25 @@ public class AudioEngine {
      * @return true if initialization succeeds, false otherwise.
      */
     public boolean initialize() {
-        // 1. Initialize audio backend (device, mixer, etc.)
-        //    This is a stub. In real life, you'd have try/catch here.
-
-        boolean audioBackendReady = simulateAudioBackendInit();
-
-        if (!audioBackendReady) {
+        try {
+            this.instrument = new PianoInstrument();  // may throw
+            System.out.println("AudioEngine: initialized with default piano instrument.");
+            return true;
+        } catch (Exception e) {
+            System.err.println("AudioEngine: failed to initialize instrument: " + e.getMessage());
             return false;
         }
-
-        // 2. Create default piano instrument
-        this.instrument = new PianoInstrument();
-        System.out.println("AudioEngine: initialized with default piano instrument.");
-        return true;
     }
 
-    public void noteOn(int pitch, int vel) {
+    public void noteOn(Pitch pitch, Velocity velocity) {
         if (instrument != null) {
-            instrument.noteOn(pitch, vel);
-        } else {
-            System.err.println("AudioEngine: noteOn ignored, instrument not initialized.");
+            instrument.noteOn(pitch, velocity);
         }
     }
 
-    public void noteOff(int pitch) {
+    public void noteOff(Pitch pitch) {
         if (instrument != null) {
             instrument.noteOff(pitch);
-        } else {
-            System.err.println("AudioEngine: noteOff ignored, instrument not initialized.");
         }
-    }
-
-    /**
-     * Example stub to simulate success/failure.
-     * Replace with real audio device initialization.
-     */
-    private boolean simulateAudioBackendInit() {
-        // return false here if you want to test the error path
-        return true;
     }
 }

@@ -12,7 +12,7 @@ public class MainView extends JFrame {
     private Loop currentLoop;
 
     private TransportListener transportListener;
-    private PianoRollListener pianoRollListener; // optional, but okay to keep
+    private PianoRollListener pianoRollListener;
     private TempoListener tempoListener;
     private SaveLoopListener saveLoopListener;
 
